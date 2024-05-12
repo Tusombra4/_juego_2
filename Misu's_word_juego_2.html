@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misu's word</title>
+    <style>
+        body {
+            background: black;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        :root {
+            --default: #121213;
+            --empty: violet;
+            --wrong: #b59f3b;
+            --right: #538d4e;
+            --warning: white;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--empty);
+            margin: 4px;
+            color: white;
+            text-transform: uppercase;
+            display: grid;
+            place-items: center;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2.4rem;
+        }
+
+        .box.empty {
+            background: var(--empty);
+        }
+
+        .box.wrong {
+            background: var(--wrong);
+        }
+
+        .box.right {
+            background: var(--right);
+        }
+
+        .animated {
+            animation: flip 0.5s ease;
+        }
+
+        @keyframes flip {
+            0% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0);
+            }
+
+            100% {
+                transform: scaleY(1);
+            }
+        }
+
+        .title {
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 3rem;
+            margin-bottom: 0;
+        }
+
+        .subTitle {
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+
+        hr {
+            border-style: solid;
+            border-color: var(--empty);
+            border-width: 1px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .v-separator {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        .social-media-link {
+            display: flex;
+            fill: white;
+            width: 25px;
+            height: 25px;
+            margin-right: 0.75rem;
+        }
+
+        .guess-history {
+            margin-top: 20px;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .guess-entry {
+            margin: 5px;
+        }
+        #remainingAttempts {
+            color: var(--warning); /* Color de advertencia */
+            margin-top: 10px; /* Espacio adicional en la parte superior */
+            font-size: 1.2rem; /* Tamaño de fuente ligeramente más grande */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Misu's word🦥🥰</h1>
+        <p class="subTitle">Adivina la palabra de cinco letras:</p>
+        <div class="grid" id="game">
+            <!-- Aquí se insertarán las letras -->
+        </div>
+        <input type="text" id="guessInput" maxlength="5" autocomplete="off">
+        <button onclick="checkGuess()">Comprobar</button>
+        <div id="feedback"></div>
+        <div id="remainingAttempts">Intentos restantes: <span id="attemptsLeft">6</span></div>
+        <div class="guess-history" id="guessHistory"></div>
+    </div>
+
+    <script>
+    const palabras = ["acido", "metal", "oxido", "atomo"];
+    const targetWord = palabras[Math.floor(Math.random() * palabras.length)]; // Selecciona una palabra al azar
+    let attempts = 6; // Número máximo de intentos permitidos
+
+    function checkGuess() {
+    const guess = document.getElementById("guessInput").value.toLowerCase();
+
+    if (guess.length !== 5) {
+        alert("Por favor, introduce una palabra de 5 letras.");
+        return;
+    }
+
+    let feedback = "";
+
+    // Contar la cantidad de letras correctas e incorrectas
+    let correctLetters = 0;
+    let incorrectLetters = 0;
+
+    // Copiar la palabra objetivo para no alterarla
+    let remainingLetters = targetWord;
+
+    // Iterar sobre la suposición del usuario
+    for (let i = 0; i < 5; i++) {
+        const letter = guess[i];
+
+        // Si la letra está en la misma posición que la palabra objetivo, es correcta
+        if (letter === targetWord[i]) {
+            feedback += "<span class='box right'>" + letter + "</span>";
+            correctLetters++;
+
+            // Eliminar la letra de las letras restantes para que no se cuente como incorrecta si aparece de nuevo
+            remainingLetters = remainingLetters.replace(letter, '');
+        } else if (remainingLetters.includes(letter)) {
+            // Si la letra está en la palabra objetivo, pero no en la misma posición, es incorrecta
+            feedback += "<span class='box wrong'>" + letter + "</span>";
+            incorrectLetters++;
+
+            // Eliminar la letra de las letras restantes para que no se cuente más de una vez
+            remainingLetters = remainingLetters.replace(letter, '');
+        } else {
+            // Si la letra no está en la palabra objetivo, es vacía
+            feedback += "<span class='box empty'>" + letter + "</span>";
+        }
+    }
+
+    document.getElementById("feedback").innerHTML = "<div class='grid'>" + feedback + "</div>";
+
+    const guessHistory = document.getElementById("guessHistory");
+    const newGuess = document.createElement("div");
+    newGuess.classList.add("guess-entry");
+    newGuess.innerHTML = "<div class='grid'>" + feedback + "</div>";
+    guessHistory.appendChild(newGuess);
+
+    attempts--; // Disminuye el número de intentos
+    document.getElementById("attemptsLeft").textContent = attempts; // Actualiza los intentos restantes
+
+    if (guess === targetWord) {
+        alert('¡Enhorabuena! Has adivinado la palabra, aquí tienes tu pista 🎁');
+        if (confirm('Junto al casino, en el ajetreo de la ciudad, Un lugar de provisiones y actividad sin par. Con estantes llenos de tentaciones, Y precios que despiertan emociones. ¿Qué lugar es este, Donde los carros ruedan sin cesar?')) {
+            window.location.reload(); // Recargar la página
+        } else {
+            window.location.href = 'https://cdn.shopify.com/s/files/1/1566/2889/files/perro_2.jpg?v=1588265489'; // Redireccionar a la imagen del perro
+        }       
+    } else if (attempts === 0) {
+        alert("¡Lo siento! Has agotado tus intentos. La palabra correcta era: " + targetWord);
+        if (confirm('¿Quieres intentarlo de nuevo?')) {
+            window.location.reload(); // Recargar la página
+        } else {
+            window.location.href = 'https://cdn.shopify.com/s/files/1/1566/2889/files/perro_2.jpg?v=1588265489'; // Cambia 'https://tusitio.com' por la URL a la que deseas redirigir al usuario
+        }
+    }
+}
+
+
+    // Mostrar la palabra objetivo al cargar la página (solo para propósitos de desarrollo)
+    console.log("Palabra objetivo:", targetWord);
+</script>
+</body>
+</html>
